@@ -1,7 +1,7 @@
 import { inputDay4 } from './input';
-import { increasing, hasDoubleDigits } from './common';
+import { increasing, hasDoubleDigitsButNoMore } from './common';
 
-export function day4Part1(input: string) {
+export function day4Part2(input: string) {
   const [min, max] = input.split('-').map(Number);
 
   const possiblePasswords = new Set<number>();
@@ -9,7 +9,7 @@ export function day4Part1(input: string) {
   for (let i = min; i <= max; i++) {
     const s = i.toString(10);
 
-    if (hasDoubleDigits(s) && increasing(s)) {
+    if (hasDoubleDigitsButNoMore(s) && increasing(s)) {
       possiblePasswords.add(i);
     }
   }
@@ -17,4 +17,4 @@ export function day4Part1(input: string) {
   return possiblePasswords.size;
 }
 
-console.log(day4Part1(inputDay4));
+console.log(day4Part2(inputDay4));

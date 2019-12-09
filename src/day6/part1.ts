@@ -1,16 +1,6 @@
 import { inputDay6 } from './input';
 import { sumBy } from 'lodash';
-
-const CENTER_OF_THE_UNIVSERSE = 'COM';
-
-interface MapEntry {
-  orbits: string;
-  distance: number;
-}
-
-interface OrbitMap {
-  [orbiter: string]: MapEntry;
-}
+import { OrbitMap, CENTER_OF_THE_UNIVSERSE } from './common';
 
 function day6Part1(input: string) {
   const orbits = input

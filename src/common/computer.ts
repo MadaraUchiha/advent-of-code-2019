@@ -1,5 +1,3 @@
-import readline from 'readline';
-
 const enum OpCodes {
   Add = 1,
   Mul = 2,
@@ -17,8 +15,8 @@ const enum Modes {
   Value = 1,
 }
 
-export async function executeProgramAndGetFirstValue(program: number[]) {
-  await executeProgram(program);
+export function executeProgramAndGetFirstValue(program: number[]) {
+  executeProgram(program);
 
   return program[0];
 }
@@ -32,135 +30,121 @@ function parseOpCode(opcode: number) {
   return [actualOpcode, ...restArray];
 }
 
-export async function executeProgram(program: number[], input: number[] = []) {
-  const readlineInterface = readline.createInterface(
-    process.stdin,
-    process.stdout,
-  );
+export function executeProgram(program: number[], input: number[] = []) {
+  const getWithMode = (value: number, mode: Modes = Modes.Position) => {
+    switch (mode) {
+      case Modes.Position:
+        return program[value];
+      case Modes.Value:
+        return value;
+    }
+  };
 
-  const askInput = async (question: string) =>
-    await new Promise<string>(resolve =>
-      readlineInterface.question(question, resolve),
-    );
-  try {
-    const getWithMode = (value: number, mode: Modes = Modes.Position) => {
-      switch (mode) {
-        case Modes.Position:
-          return program[value];
-        case Modes.Value:
-          return value;
+  const output: number[] = [];
+  let halted = false;
+  let cursor = 0;
+  while (!halted) {
+    if (cursor > program.length) {
+      throw new Error(`Out of bounds. Universe imploding`);
+    }
+    let [opcode, ...modes] = parseOpCode(program[cursor++]);
+
+    switch (opcode) {
+      case OpCodes.Add: {
+        const [arg1Mode, arg2Mode] = modes;
+        const arg1Ptr = program[cursor++];
+        const arg2Ptr = program[cursor++];
+        const resPtr = program[cursor++];
+
+        const arg1 = getWithMode(arg1Ptr, arg1Mode);
+        const arg2 = getWithMode(arg2Ptr, arg2Mode);
+
+        program[resPtr] = arg1 + arg2;
+        break;
       }
-    };
+      case OpCodes.Mul: {
+        const [arg1Mode, arg2Mode] = modes;
+        const arg1Ptr = program[cursor++];
+        const arg2Ptr = program[cursor++];
+        const resPtr = program[cursor++];
 
-    const output: number[] = [];
-    let halted = false;
-    let cursor = 0;
-    while (!halted) {
-      if (cursor > program.length) {
-        throw new Error(`Out of bounds. Universe imploding`);
+        const arg1 = getWithMode(arg1Ptr, arg1Mode);
+        const arg2 = getWithMode(arg2Ptr, arg2Mode);
+
+        program[resPtr] = arg1 * arg2;
+        break;
       }
-      let [opcode, ...modes] = parseOpCode(program[cursor++]);
+      case OpCodes.Input: {
+        const storeDestination = program[cursor++];
+        const inputValue = input.shift();
 
-      switch (opcode) {
-        case OpCodes.Add: {
-          const [arg1Mode, arg2Mode] = modes;
-          const arg1Ptr = program[cursor++];
-          const arg2Ptr = program[cursor++];
-          const resPtr = program[cursor++];
+        program[storeDestination] = Number(inputValue);
+        break;
+      }
+      case OpCodes.Output: {
+        const [arg1Mode] = modes;
+        const outputValue = getWithMode(program[cursor++], arg1Mode);
 
-          const arg1 = getWithMode(arg1Ptr, arg1Mode);
-          const arg2 = getWithMode(arg2Ptr, arg2Mode);
+        output.push(outputValue);
+        break;
+      }
+      case OpCodes.JumpIfTrue: {
+        const [arg1Mode, arg2Mode] = modes;
+        const valueUnderTest = getWithMode(program[cursor++], arg1Mode);
+        const jumpDestination = getWithMode(program[cursor++], arg2Mode);
 
-          program[resPtr] = arg1 + arg2;
-          break;
+        if (valueUnderTest !== 0) {
+          cursor = jumpDestination;
         }
-        case OpCodes.Mul: {
-          const [arg1Mode, arg2Mode] = modes;
-          const arg1Ptr = program[cursor++];
-          const arg2Ptr = program[cursor++];
-          const resPtr = program[cursor++];
+        break;
+      }
+      case OpCodes.JumpIfFalse: {
+        const [arg1Mode, arg2Mode] = modes;
+        const valueUnderTest = getWithMode(program[cursor++], arg1Mode);
+        const jumpDestination = getWithMode(program[cursor++], arg2Mode);
 
-          const arg1 = getWithMode(arg1Ptr, arg1Mode);
-          const arg2 = getWithMode(arg2Ptr, arg2Mode);
-
-          program[resPtr] = arg1 * arg2;
-          break;
+        if (valueUnderTest === 0) {
+          cursor = jumpDestination;
         }
-        case OpCodes.Input: {
-          const storeDestination = program[cursor++];
-          const inputValue =
-            input.shift() ?? (await askInput('Please provide an input: '));
+        break;
+      }
+      case OpCodes.LessThan: {
+        const [arg1Mode, arg2Mode] = modes;
+        const arg1Ptr = program[cursor++];
+        const arg2Ptr = program[cursor++];
+        const resPtr = program[cursor++];
 
-          program[storeDestination] = Number(inputValue);
-          break;
-        }
-        case OpCodes.Output: {
-          const [arg1Mode] = modes;
-          const outputValue = getWithMode(program[cursor++], arg1Mode);
+        const arg1 = getWithMode(arg1Ptr, arg1Mode);
+        const arg2 = getWithMode(arg2Ptr, arg2Mode);
 
-          output.push(outputValue);
-          break;
-        }
-        case OpCodes.JumpIfTrue: {
-          const [arg1Mode, arg2Mode] = modes;
-          const valueUnderTest = getWithMode(program[cursor++], arg1Mode);
-          const jumpDestination = getWithMode(program[cursor++], arg2Mode);
+        program[resPtr] = arg1 < arg2 ? 1 : 0;
 
-          if (valueUnderTest !== 0) {
-            cursor = jumpDestination;
-          }
-          break;
-        }
-        case OpCodes.JumpIfFalse: {
-          const [arg1Mode, arg2Mode] = modes;
-          const valueUnderTest = getWithMode(program[cursor++], arg1Mode);
-          const jumpDestination = getWithMode(program[cursor++], arg2Mode);
+        break;
+      }
+      case OpCodes.Equals: {
+        const [arg1Mode, arg2Mode] = modes;
+        const arg1Ptr = program[cursor++];
+        const arg2Ptr = program[cursor++];
+        const resPtr = program[cursor++];
 
-          if (valueUnderTest === 0) {
-            cursor = jumpDestination;
-          }
-          break;
-        }
-        case OpCodes.LessThan: {
-          const [arg1Mode, arg2Mode] = modes;
-          const arg1Ptr = program[cursor++];
-          const arg2Ptr = program[cursor++];
-          const resPtr = program[cursor++];
+        const arg1 = getWithMode(arg1Ptr, arg1Mode);
+        const arg2 = getWithMode(arg2Ptr, arg2Mode);
 
-          const arg1 = getWithMode(arg1Ptr, arg1Mode);
-          const arg2 = getWithMode(arg2Ptr, arg2Mode);
+        program[resPtr] = arg1 === arg2 ? 1 : 0;
 
-          program[resPtr] = arg1 < arg2 ? 1 : 0;
-
-          break;
-        }
-        case OpCodes.Equals: {
-          const [arg1Mode, arg2Mode] = modes;
-          const arg1Ptr = program[cursor++];
-          const arg2Ptr = program[cursor++];
-          const resPtr = program[cursor++];
-
-          const arg1 = getWithMode(arg1Ptr, arg1Mode);
-          const arg2 = getWithMode(arg2Ptr, arg2Mode);
-
-          program[resPtr] = arg1 === arg2 ? 1 : 0;
-
-          break;
-        }
-        case OpCodes.Halt: {
-          halted = true;
-          break;
-        }
-        default: {
-          throw new Error(
-            `Unknown opcode ${opcode} at cursor ${cursor}, universe imploding`,
-          );
-        }
+        break;
+      }
+      case OpCodes.Halt: {
+        halted = true;
+        break;
+      }
+      default: {
+        throw new Error(
+          `Unknown opcode ${opcode} at cursor ${cursor}, universe imploding`,
+        );
       }
     }
-
-    return output;
-  } finally {
-    readlineInterface.close();
   }
+
+  return output;
 }

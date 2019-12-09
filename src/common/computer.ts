@@ -15,8 +15,28 @@ const enum Modes {
   Value = 1,
 }
 
-export function executeProgramAndGetFirstValue(program: number[]) {
-  executeProgram(program);
+export interface IOWrapper {
+  memory: number[];
+  read: () => Promise<number>;
+  write: (arg: number) => void;
+}
+
+export class ArrayIOWrapper implements IOWrapper {
+  public constructor(public memory: number[] = []) {}
+  async read() {
+    const n = this.memory.shift();
+    if (typeof n !== 'number') {
+      throw new Error('Tried to read from empty memory. Universe implodes');
+    }
+    return n;
+  }
+  write(n: number) {
+    this.memory.push(n);
+  }
+}
+
+export async function executeProgramAndGetFirstValue(program: number[]) {
+  await executeProgram(program);
 
   return program[0];
 }
@@ -30,7 +50,11 @@ function parseOpCode(opcode: number) {
   return [actualOpcode, ...restArray];
 }
 
-export function executeProgram(program: number[], input: number[] = []) {
+export async function executeProgram(
+  program: number[],
+  input: IOWrapper = new ArrayIOWrapper(),
+  output: IOWrapper = new ArrayIOWrapper(),
+) {
   const getWithMode = (value: number, mode: Modes = Modes.Position) => {
     switch (mode) {
       case Modes.Position:
@@ -40,7 +64,6 @@ export function executeProgram(program: number[], input: number[] = []) {
     }
   };
 
-  const output: number[] = [];
   let halted = false;
   let cursor = 0;
   while (!halted) {
@@ -76,7 +99,7 @@ export function executeProgram(program: number[], input: number[] = []) {
       }
       case OpCodes.Input: {
         const storeDestination = program[cursor++];
-        const inputValue = input.shift();
+        const inputValue = await input.read();
 
         program[storeDestination] = Number(inputValue);
         break;
@@ -85,7 +108,7 @@ export function executeProgram(program: number[], input: number[] = []) {
         const [arg1Mode] = modes;
         const outputValue = getWithMode(program[cursor++], arg1Mode);
 
-        output.push(outputValue);
+        output.write(outputValue);
         break;
       }
       case OpCodes.JumpIfTrue: {
@@ -146,5 +169,5 @@ export function executeProgram(program: number[], input: number[] = []) {
     }
   }
 
-  return output;
+  return output.memory;
 }

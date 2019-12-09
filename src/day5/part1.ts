@@ -1,10 +1,10 @@
 import { inputDay5 } from './input';
-import { executeProgram } from '../common/computer';
+import { executeProgram, ArrayIOWrapper } from '../common/computer';
 
-export function day5Part1(input: string) {
+export async function day5Part1(input: string) {
   const program = input.split(',').map(Number);
 
-  return executeProgram(program, [1]);
+  return (await executeProgram(program, new ArrayIOWrapper([1]))).pop();
 }
 
-console.log(day5Part1(inputDay5));
+day5Part1(inputDay5).then(console.log);

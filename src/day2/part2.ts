@@ -3,7 +3,7 @@ import { inputDay2 } from './input';
 
 const DESIRED_OUTPUT = 19690720;
 
-export function day2Part2(input: string) {
+export async function day2Part2(input: string) {
   for (let noun = 0; noun < 100; noun++) {
     for (let verb = 0; verb < 100; verb++) {
       const program = input.split(',').map(Number); // Initiate memory anew each time
@@ -12,7 +12,7 @@ export function day2Part2(input: string) {
       program[2] = verb;
 
       try {
-        const result = executeProgramAndGetFirstValue(program);
+        const result = await executeProgramAndGetFirstValue(program);
         if (result === DESIRED_OUTPUT) {
           return 100 * noun + verb;
         }
@@ -26,4 +26,4 @@ export function day2Part2(input: string) {
   return -1; // Oops!
 }
 
-console.log(day2Part2(inputDay2));
+day2Part2(inputDay2).then(console.log);

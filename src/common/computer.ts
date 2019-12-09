@@ -5,6 +5,10 @@ const enum OpCodes {
   Mul = 2,
   Input = 3,
   Output = 4,
+  JumpIfTrue = 5,
+  JumpIfFalse = 6,
+  LessThan = 7,
+  Equals = 8,
   Halt = 99,
 }
 
@@ -95,6 +99,52 @@ export async function executeProgram(program: number[], input: number[] = []) {
           const outputValue = getWithMode(program[cursor++], arg1Mode);
 
           output.push(outputValue);
+          break;
+        }
+        case OpCodes.JumpIfTrue: {
+          const [arg1Mode, arg2Mode] = modes;
+          const valueUnderTest = getWithMode(program[cursor++], arg1Mode);
+          const jumpDestination = getWithMode(program[cursor++], arg2Mode);
+
+          if (valueUnderTest !== 0) {
+            cursor = jumpDestination;
+          }
+          break;
+        }
+        case OpCodes.JumpIfFalse: {
+          const [arg1Mode, arg2Mode] = modes;
+          const valueUnderTest = getWithMode(program[cursor++], arg1Mode);
+          const jumpDestination = getWithMode(program[cursor++], arg2Mode);
+
+          if (valueUnderTest === 0) {
+            cursor = jumpDestination;
+          }
+          break;
+        }
+        case OpCodes.LessThan: {
+          const [arg1Mode, arg2Mode] = modes;
+          const arg1Ptr = program[cursor++];
+          const arg2Ptr = program[cursor++];
+          const resPtr = program[cursor++];
+
+          const arg1 = getWithMode(arg1Ptr, arg1Mode);
+          const arg2 = getWithMode(arg2Ptr, arg2Mode);
+
+          program[resPtr] = arg1 < arg2 ? 1 : 0;
+
+          break;
+        }
+        case OpCodes.Equals: {
+          const [arg1Mode, arg2Mode] = modes;
+          const arg1Ptr = program[cursor++];
+          const arg2Ptr = program[cursor++];
+          const resPtr = program[cursor++];
+
+          const arg1 = getWithMode(arg1Ptr, arg1Mode);
+          const arg2 = getWithMode(arg2Ptr, arg2Mode);
+
+          program[resPtr] = arg1 === arg2 ? 1 : 0;
+
           break;
         }
         case OpCodes.Halt: {

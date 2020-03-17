@@ -11,10 +11,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^12.12.14":
-  version: 12.12.14
-  resolution: "@types/node@npm:12.12.14"
-  checksum: 2/3be991ae85c25a85dfde8983690ebf255d09e671265b261e61a71124303a4ac021db2d0d3681feec673a9e92b33b0ee4b8247531939401c597c7d4debcaebc30
+"@types/node@npm:^13.9.1":
+  version: 13.9.1
+  resolution: "@types/node@npm:13.9.1"
+  checksum: 2/578d73f0128266e9fe1a0ba0017ef37196b9c8e5ecd66f8b99c22ccc7b02591b76454dbd61e420983f5b347103c8f31d8bc4f313f03c47dd6e8e70ce997ff2fc
   languageName: node
   linkType: hard
 
@@ -23,10 +23,10 @@ __metadata:
   resolution: "advent-of-code-2019@workspace:."
   dependencies:
     "@types/lodash": ^4.14.149
-    "@types/node": ^12.12.14
+    "@types/node": ^13.9.1
     lodash: ^4.17.15
-    ts-node: ^8.5.4
-    typescript: ^3.7.2
+    ts-node: ^8.6.2
+    typescript: ^3.8.3
   languageName: unknown
   linkType: soft
 
@@ -82,45 +82,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-node@npm:^8.5.4":
-  version: 8.5.4
-  resolution: "ts-node@npm:8.5.4"
+"ts-node@npm:^8.6.2":
+  version: 8.7.0
+  resolution: "ts-node@npm:8.7.0"
   dependencies:
     arg: ^4.1.0
     diff: ^4.0.1
     make-error: ^1.1.1
     source-map-support: ^0.5.6
-    yn: ^3.0.0
+    yn: 3.1.1
   peerDependencies:
-    typescript: ">=2.0"
+    typescript: ">=2.7"
   bin:
     ts-node: dist/bin.js
-    ts-script: dist/script.js
-  checksum: 2/f8f8c7a29601b146ad2e2175e26e5bd19799464e15a56e6998b2b636b432461145fa0bbb608e77a11fb2c7a95fa1d6c089a81bc70e8da400d09bc46a5acdd9da
+    ts-node-script: dist/bin-script.js
+    ts-node-transpile-only: dist/bin-transpile.js
+    ts-script: dist/bin-script-deprecated.js
+  checksum: 2/3d8a83efbd18bca2520b59dadc8cb07b7f40b4d2c61230b5ce352a2d3fcb5fdb2639929d1ff50afce4faf7972d79fc49d954b7372be14d1894151ee7b8f11e53
   languageName: node
   linkType: hard
 
-typescript@^3.7.2:
-  version: 3.7.2
-  resolution: "typescript@npm:3.7.2"
+typescript@^3.8.3:
+  version: 3.8.3
+  resolution: "typescript@npm:3.8.3"
   bin:
-    tsc: ./bin/tsc
-    tsserver: ./bin/tsserver
-  checksum: 2/a18862901487b56bb1f9be1cb8fa6266ccb0bbe57472967a1a88d27654130ae1de58517b54305eb6ee54e154c9da90fd8d1ec9563a3f62ee8807118465dfe776
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 2/519b11576247fe3570d89a2aa757d8f666aafc0cb9465a6cdd4df09c1dc6bf7285f0c6008d2ac7a55ea26457e767aaab819f58439d80af2cce1d9805b2be1034
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^3.7.2#builtin<compat/typescript>":
-  version: 3.7.2
-  resolution: "typescript@patch:typescript@npm%3A3.7.2#builtin<compat/typescript>::version=3.7.2&hash=270b6c"
+"typescript@patch:typescript@^3.8.3#builtin<compat/typescript>":
+  version: 3.8.3
+  resolution: "typescript@patch:typescript@npm%3A3.8.3#builtin<compat/typescript>::version=3.8.3&hash=270b6c"
   bin:
-    tsc: ./bin/tsc
-    tsserver: ./bin/tsserver
-  checksum: 2/3bc4c8fab9eef4a61c00d09873e04251a558feea003c1ee55f24c664f9d3f1c5d1b586409ee6098943fde0c332af9e6f6ffa4496c5a4e0b244dbf5576c979f2a
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 2/2950b292ac700898647d49ca5f07fa546f6c3d28983ba559c5b4fa360babdc1734493b7f5f72553735eaa401c850989d7bbbd70f739df3c0b7fc83c82e37d8a5
   languageName: node
   linkType: hard
 
-"yn@npm:^3.0.0":
+"yn@npm:3.1.1":
   version: 3.1.1
   resolution: "yn@npm:3.1.1"
   checksum: 2/bff63b80568d80c711670935427494dde47cdf97e8b04196b140ce0af519c81c5ee857eddad0caa8b422dd65aea0157bbfaacbb1546bebba623f0f383d5d9ae5

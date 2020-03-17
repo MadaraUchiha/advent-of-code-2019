@@ -6,7 +6,6 @@
   "repository": "https://github.com/MadaraUchiha/advent-of-code-2019",
   "author": "Madara Uchiha <me@madara.ninja>",
   "license": "WTFPL",
-  "private": false,
   "devDependencies": {
     "@types/lodash": "^4.14.149",
     "@types/node": "^12.12.14",

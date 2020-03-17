@@ -9,6 +9,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.9.1",
+    "prettier": "^1.19.1",
     "ts-node": "^8.6.2",
     "typescript": "^3.8.3"
   },

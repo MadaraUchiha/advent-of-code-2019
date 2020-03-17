@@ -7,12 +7,14 @@ const enum OpCodes {
   JumpIfFalse = 6,
   LessThan = 7,
   Equals = 8,
+  AdjustRelativeBase = 9,
   Halt = 99,
 }
 
 const enum Modes {
   Position = 0,
   Value = 1,
+  Relative = 2,
 }
 
 export interface IOWrapper {
@@ -58,23 +60,42 @@ export async function executeProgram(
   const getWithMode = (value: number, mode: Modes = Modes.Position) => {
     switch (mode) {
       case Modes.Position:
-        return program[value];
+        return program[value] ?? 0;
       case Modes.Value:
-        return value;
+        return value ?? 0;
+      case Modes.Relative:
+        return program[value + relativeBase] ?? 0;
+    }
+  };
+
+  const setWithMode = (ptrValue: number, mode: Modes = Modes.Position) => {
+    switch (mode) {
+      case Modes.Position:
+        return ptrValue;
+      case Modes.Relative:
+        return ptrValue + relativeBase;
+      default:
+        throw new Error(
+          'Should not have set with mode other than position or relative. Universe imploding',
+        );
     }
   };
 
   let halted = false;
   let cursor = 0;
+  let relativeBase = 0;
   while (!halted) {
     if (cursor > program.length) {
       throw new Error(`Out of bounds. Universe imploding`);
     }
-    let [opcode, ...modes] = parseOpCode(program[cursor++]);
+    let [opcode, ...modes] = parseOpCode(program[cursor++]) as [
+      OpCodes,
+      ...Modes[],
+    ];
 
     switch (opcode) {
       case OpCodes.Add: {
-        const [arg1Mode, arg2Mode] = modes;
+        const [arg1Mode, arg2Mode, resMode] = modes;
         const arg1Ptr = program[cursor++];
         const arg2Ptr = program[cursor++];
         const resPtr = program[cursor++];
@@ -82,11 +103,11 @@ export async function executeProgram(
         const arg1 = getWithMode(arg1Ptr, arg1Mode);
         const arg2 = getWithMode(arg2Ptr, arg2Mode);
 
-        program[resPtr] = arg1 + arg2;
+        program[setWithMode(resPtr, resMode)] = arg1 + arg2;
         break;
       }
       case OpCodes.Mul: {
-        const [arg1Mode, arg2Mode] = modes;
+        const [arg1Mode, arg2Mode, resMode] = modes;
         const arg1Ptr = program[cursor++];
         const arg2Ptr = program[cursor++];
         const resPtr = program[cursor++];
@@ -94,14 +115,16 @@ export async function executeProgram(
         const arg1 = getWithMode(arg1Ptr, arg1Mode);
         const arg2 = getWithMode(arg2Ptr, arg2Mode);
 
-        program[resPtr] = arg1 * arg2;
+        program[setWithMode(resPtr, resMode)] = arg1 * arg2;
         break;
       }
       case OpCodes.Input: {
+        const [destMode] = modes;
+
         const storeDestination = program[cursor++];
         const inputValue = await input.read();
 
-        program[storeDestination] = Number(inputValue);
+        program[setWithMode(storeDestination, destMode)] = Number(inputValue);
         break;
       }
       case OpCodes.Output: {
@@ -132,7 +155,7 @@ export async function executeProgram(
         break;
       }
       case OpCodes.LessThan: {
-        const [arg1Mode, arg2Mode] = modes;
+        const [arg1Mode, arg2Mode, resMode] = modes;
         const arg1Ptr = program[cursor++];
         const arg2Ptr = program[cursor++];
         const resPtr = program[cursor++];
@@ -140,12 +163,12 @@ export async function executeProgram(
         const arg1 = getWithMode(arg1Ptr, arg1Mode);
         const arg2 = getWithMode(arg2Ptr, arg2Mode);
 
-        program[resPtr] = arg1 < arg2 ? 1 : 0;
+        program[setWithMode(resPtr, resMode)] = arg1 < arg2 ? 1 : 0;
 
         break;
       }
       case OpCodes.Equals: {
-        const [arg1Mode, arg2Mode] = modes;
+        const [arg1Mode, arg2Mode, resMode] = modes;
         const arg1Ptr = program[cursor++];
         const arg2Ptr = program[cursor++];
         const resPtr = program[cursor++];
@@ -153,8 +176,17 @@ export async function executeProgram(
         const arg1 = getWithMode(arg1Ptr, arg1Mode);
         const arg2 = getWithMode(arg2Ptr, arg2Mode);
 
-        program[resPtr] = arg1 === arg2 ? 1 : 0;
+        program[setWithMode(resPtr, resMode)] = arg1 === arg2 ? 1 : 0;
 
+        break;
+      }
+      case OpCodes.AdjustRelativeBase: {
+        const [arg1Mode] = modes;
+        const arg1Ptr = program[cursor++];
+
+        const arg1 = getWithMode(arg1Ptr, arg1Mode);
+
+        relativeBase += arg1;
         break;
       }
       case OpCodes.Halt: {
